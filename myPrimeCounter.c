@@ -472,17 +472,18 @@ void* isPrimesInRange(void* args) {
     int num_Square = sqrt(num);
     bool* isprime = malloc(sizeof(bool));
     *isprime = true;
-    for (int i = start; i < end; i++) {
-        if (num_Square < primesNumberInRange[i]) break;
-        if (num_Square % primesNumberInRange[i] == 0) {
+    for (int i = start; i < end && num_Square >= primesNumberInRange[i]; i++) {
+        if (num % primesNumberInRange[i] == 0) { 
             *isprime = false;
-            break;
+            return isprime;
         }
-    }
+    }             
+    *isprime = true;   
     return isprime;
 }
 
 int main() {
+
     int total_primes = 0;
     
     // Read numbers from stdin until end of file
@@ -502,18 +503,23 @@ int main() {
         } 
 
         // Wait for all threads to finish
+        int count = 0;
         for (int i = 0; i < NUM_THREADS; i++) {
-            bool* isPrime = false;
+            bool* isPrime = NULL; // Initialize pointer to NULL
             pthread_join(threads[i], (void**)&isPrime);
-            if (*isPrime) {
-                total_primes++;
-                free(isPrime); // Deallocate memory
-                break;
+            if (isPrime != NULL && !(*isPrime)) {
+               break;
             }
-            free(isPrime); // Deallocate memory
+            else
+                count++;
+
+            if(count == 4) 
+                total_primes++;
+            // Free memory only if it was allocated
+            free(isPrime);
         }
     }
-    
+   
     printf("%d total primes.\n", total_primes);
 
     return 0;
